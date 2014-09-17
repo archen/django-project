@@ -1,10 +1,23 @@
-"""Common settings and globals."""
-
-
+# Core Python imports
+from os import environ
 from os.path import abspath, basename, dirname, join, normpath
 from sys import path
+
+# Core Django imports
+from django.core.exceptions import ImproperlyConfigured
+
 import dj_database_url
 
+
+def get_env_variable(var_name):
+    """ Try to find an environment variable named 'var_name'
+        return exception on failure
+    """
+    try:
+        return environ[var_name]
+    except KeyError:
+        error_msg = "The environment variable %s is not set" % var_name
+        raise ImproperlyConfigured(error_msg)
 
 ########## PATH CONFIGURATION
 # Absolute filesystem path to the Django project directory:
@@ -44,7 +57,7 @@ MANAGERS = ADMINS
 
 ########## DATABASE CONFIGURATION
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#databases
-DATABASES['default'] = dj_database_url.config()
+DATABASES = {'default': dj_database_url.config()}
 ########## END DATABASE CONFIGURATION
 
 
@@ -101,7 +114,7 @@ STATICFILES_FINDERS = (
 ########## SECRET CONFIGURATION
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#secret-key
 # Note: This key should only be used for development and testing.
-SECRET_KEY = r"{{ secret_key }}"
+SECRET_KEY = get_env_variable('DJANGO_SECRET_KEY')
 ########## END SECRET CONFIGURATION
 
 
@@ -182,6 +195,7 @@ DJANGO_APPS = (
     # Admin panel and documentation:
     'django.contrib.admin',
     # 'django.contrib.admindocs',
+    'crispy_forms',
 )
 
 # Apps specific for this project go here.
@@ -230,14 +244,3 @@ LOGGING = {
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#wsgi-application
 WSGI_APPLICATION = '%s.wsgi.application' % SITE_NAME
 ########## END WSGI CONFIGURATION
-
-
-########## SOUTH CONFIGURATION
-# See: http://south.readthedocs.org/en/latest/installation.html#configuring-your-django-installation
-INSTALLED_APPS += (
-    # Database migration helpers:
-    'south',
-)
-# Don't need to use South when setting up a test database.
-SOUTH_TESTS_MIGRATE = False
-########## END SOUTH CONFIGURATION
